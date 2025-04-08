@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Advanced Account Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #fff;
+      color: #000;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.dark {
+      background-color: #121212;
+      color: #f0f0f0;
+    }
+
+    input, button, select {
+      margin: 5px;
+      padding: 6px 10px;
+      font-size: 14px;
+    }
+
+    #output {
+      white-space: pre-wrap;
+      background: #f4f4f4;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 15px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    body.dark #output {
+      background: #1e1e1e;
+      border-color: #444;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Advanced Fake Account Generator</h2>
+
+  <label>Number of accounts:</label>
+  <input type="number" id="count" value="5" min="1" max="100">
+
+  <label>Select country:</label>
+  <select id="country">
+    <option value="USA">USA</option>
+    <option value="Canada">Canada</option>
+    <option value="UK">UK</option>
+    <option value="Germany">Germany</option>
+    <option value="Australia">Australia</option>
+  </select>
+
+  <br>
+
+  <button onclick="generateAccounts()">Generate</button>
+  <button onclick="downloadJSON()">Download JSON</button>
+  <button onclick="downloadTXT()">Download TXT</button>
+  <button onclick="saveToLocal()">Save to Local</button>
+  <button onclick="loadFromLocal()">Load from Local</button>
+  <button onclick="simulateServerSave()">Simulate Server Save</button>
+  <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+
+  <h3>Generated Accounts:</h3>
+  <pre id="output">Click “Generate” to create fake accounts...</pre>
+
+  <script>
+    const firstNames = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve'];
+    const lastNames = ['Smith', 'Johnson', 'Brown', 'Garcia', 'Martinez'];
+
+    let currentAccounts = [];
+
+    function getRandomItem(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function generateAvatar() {
+      const id = Math.floor(Math.random() * 1000);
+      return `https://api.dicebear.com/7.x/thumbs/svg?seed=${id}`;
+    }
+
+    function generateAccount(selectedCountry) {
+      const firstName = getRandomItem(firstNames);
+      const lastName = getRandomItem(lastNames);
+      const username = (firstName + lastName + Math.floor(Math.random() * 1000)).toLowerCase();
+      const email = `${username}@example.com`;
+      const password = Math.random().toString(36).slice(-10);
+      const age = Math.floor(Math.random() * (60 - 18 + 1)) + 18;
+      const phone = `+1-${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 9000 + 1000)}`;
+      const avatar = generateAvatar();
+
+      return {
+        firstName,
+        lastName,
+        username,
+        email,
+        password,
+        age,
+        country: selectedCountry,
+        phone,
+        avatar
+      };
+    }
+
+    function generateAccounts() {
+      const count = parseInt(document.getElementById('count').value);
+      const country = document.getElementById('country').value;
+      currentAccounts = [];
+      for (let i = 0; i < count; i++) {
+        currentAccounts.push(generateAccount(country));
+      }
+      displayAccounts();
+    }
+
+    function displayAccounts() {
+      let output = '';
+      currentAccounts.forEach((acc, index) => {
+        output += `Account ${index + 1}:\n`;
+        for (const key in acc) {
+          output += `  ${key}: ${acc[key]}\n`;
+        }
+        output += '\n';
+      });
+      document.getElementById('output').textContent = output;
+    }
+
+    function downloadJSON() {
+      const blob = new Blob([JSON.stringify(currentAccounts, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'accounts.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function downloadTXT() {
+      let txt = '';
+      currentAccounts.forEach((acc, index) => {
+        txt += `Account ${index + 1}:\n`;
+        for (const key in acc) {
+          txt += `  ${key}: ${acc[key]}\n`;
+        }
+        txt += '\n';
+      });
+      const blob = new Blob([txt], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'accounts.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function saveToLocal() {
+      localStorage.setItem('savedAccounts', JSON.stringify(currentAccounts));
+      alert('Accounts saved to local storage.');
+    }
+
+    function loadFromLocal() {
+      const data = localStorage.getItem('savedAccounts');
+      if (data) {
+        currentAccounts = JSON.parse(data);
+        displayAccounts();
+      } else {
+        alert('No saved data found.');
+      }
+    }
+
+    function simulateServerSave() {
+      console.log("Simulated POST to server:");
+      console.log(JSON.stringify(currentAccounts, null, 2));
+      alert('Simulated POST to server. Check console.');
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark');
+    }
+  </script>
+
+</body>
+</html>
